@@ -55,7 +55,7 @@
   font-family: "Archopada Rounded";
   src:
     local("Archopada Rounded"),
-    url("/fonts/ArchopadaRounded-ExtraBold.woff2") format("woff2"),
+    url("/fonts/ArchopadaRounded-ExtraBold.woff") format("woff"),
     url("/fonts/ArchopadaRounded-ExtraBold.ttf") format("truetype");
   font-weight: 800;
   font-style: normal;
