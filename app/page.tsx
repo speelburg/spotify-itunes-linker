@@ -120,20 +120,26 @@ export default function Page() {
           </div>
         </header>
 
-      {/* Controls panel (peach box with green border and angled shadow) */}
+{/* Controls panel (peach box with green border and angled shadow) */}
 <section className="rounded-2xl p-4 md:p-5 panel-surface psd-shadow">
-  <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch">
+  <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
     <input
-      className="flex-1 rounded-xl px-3 h-12"
-      style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
+      className="flex-1 rounded-xl px-4 py-3 text-base"
+      style={{
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+      }}
       placeholder="Paste Spotify playlist link (open.spotify.com or spotify.link)…"
       value={url}
       onChange={(e) => setUrl(e.target.value)}
     />
-    <div className="flex gap-2 sm:items-stretch">
+    <div className="flex gap-2">
       <select
-        className="rounded-xl px-3 h-12"
-        style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
+        className="rounded-xl px-3 py-3 text-base"
+        style={{
+          background: "var(--panel)",
+          border: "1px solid var(--border)",
+        }}
         value={country}
         onChange={(e) => setCountry(e.target.value)}
         title="Select your iTunes Store region"
@@ -147,7 +153,7 @@ export default function Page() {
       <button
         onClick={handleGenerate}
         disabled={loading || !url}
-        className="rounded-xl px-5 h-12 disabled:opacity-50 btn-solid whitespace-nowrap"
+        className="rounded-xl px-5 py-3 text-base disabled:opacity-50 btn-solid whitespace-nowrap"
       >
         {loading ? "Working..." : "Generate"}
       </button>
@@ -157,6 +163,7 @@ export default function Page() {
     Current store: <span className="font-medium">{countryName}</span>
   </div>
 </section>
+
 
 
         {/* Error */}
