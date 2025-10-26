@@ -108,17 +108,38 @@ export default function Page() {
       <div className="mx-auto max-w-3xl px-4 py-8 md:py-12 space-y-6">
         {/* Header */}
         <header className="space-y-4">
-          <div className="h1-words">
-            <span>BUY</span>
-            <span>YOUR</span>
-            <span>PLAYLIST</span>
-          </div>
+  {/* Make the title link to Instagram */}
+  <a
+    href="http://instagram.com/speelburg"
+    target="_blank"
+    rel="noreferrer"
+    className="h1-words unstyled-link"
+    title="Follow SPEELBURG on Instagram"
+  >
+    <span>BUY</span>
+    <span>YOUR</span>
+    <span>PLAYLIST</span>
+  </a>
 
-          <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
-            <p>paste a public spotify playlist URL</p>
-          
-          </div>
-        </header>
+  <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
+    <p>paste a public spotify playlist URL</p>
+
+    {/* byline: centered, same size as line above, 'SPEELBURG' in blue and linked */}
+    <p className="no-justify text-sm md:text-base">
+      by{" "}
+      <a
+        href="http://instagram.com/speelburg"
+        target="_blank"
+        rel="noreferrer"
+        className="link-blue"
+        title="SPEELBURG on Instagram"
+      >
+        SPEELBURG
+      </a>
+    </p>
+  </div>
+</header>
+
 
 {/* Controls panel (peach box with green border and angled shadow) */}
 <section className="rounded-2xl p-4 md:p-5 panel-surface psd-shadow">

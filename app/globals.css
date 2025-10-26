@@ -146,3 +146,23 @@ body {
   width: 100%;
   height: 0; /* invisible shim that forces last line to stretch */
 }
+/* Links that inherit your green and don't underline */
+.unstyled-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Use your drop-shadow blue for emphasis links */
+.link-blue {
+  color: var(--shadow-blue);
+  text-decoration: none;
+}
+
+/* A paragraph that is NOT justified (overrides the header-just rules) */
+.no-justify {
+  text-align: center !important;      /* center it, per your request */
+  text-align-last: auto !important;   /* don't force last-line justify */
+}
+.no-justify::after {                   /* cancel the justify shim */
+  content: none !important;
+}
