@@ -5,6 +5,61 @@ const SPOTIFY_PLAYLIST_API = (id: string) =>
   `https://api.spotify.com/v1/playlists/${id}/tracks?limit=100`;
 const ITUNES_SEARCH = "https://itunes.apple.com/search";
 
+// ---------- Utilities to normalize Spotify links ----------
+const SHORT_HOSTS = new Set([
+  "spotify.link",      // official mobile shortener
+  "spoti.fi",          // older shortener
+  "link.tospotify.com",
+  "spotify.app.link",
+]);
+
+/** Try to resolve short/mobile share URLs to a final open.spotify.com URL */
+async function expandSpotifyUrl(input: string): Promise<string> {
+  // spotify:playlist:ID — already normalized
+  if (/^spotify:playlist:[a-z0-9]+$/i.test(input)) return input;
+
+  let u: URL;
+  try {
+    u = new URL(input);
+  } catch {
+    return input;
+  }
+
+  // Not a short host? Nothing to expand
+  if (!SHORT_HOSTS.has(u.hostname.toLowerCase())) return input;
+
+  try {
+    // Use GET so some shorteners actually follow; Next server fetch follows redirects.
+    const res = await fetch(u.toString(), { redirect: "follow", cache: "no-store" });
+    // If redirects were followed, res.url will be the final landing URL
+    if (res?.url) return res.url;
+
+    // Fallback: try reading HTML and scraping an open.spotify.com URL
+    const html = await res.text().catch(() => "");
+    const m = html.match(/https?:\/\/open\.spotify\.com\/[^\s"'<>]+/i);
+    return m ? m[0] : input;
+  } catch {
+    return input; // If anything fails, return original; parser may still handle it
+  }
+}
+
+/** Extract playlist ID from diverse Spotify URL shapes or a spotify: URI */
+function parsePlaylistId(input: string) {
+  // spotify:playlist:ID
+  const uriMatch = input.match(/^spotify:playlist:([a-zA-Z0-9]+)/i);
+  if (uriMatch) return uriMatch[1];
+
+  // Any URL form → look for /playlist/{id} anywhere in the path
+  let url: URL;
+  try { url = new URL(input); } catch { throw new Error("Invalid URL"); }
+
+  const path = url.pathname; // e.g. /playlist/37i9dQZF1DXcBWIGoYBM5M or /user/xxx/playlist/ID
+  const direct = path.match(/\/playlist\/([a-zA-Z0-9]+)/i);
+  if (direct?.[1]) return direct[1];
+
+  throw new Error("Could not parse playlist ID");
+}
+
 // ---------- Spotify ----------
 async function getSpotifyAppToken() {
   const id = process.env.SPOTIFY_CLIENT_ID!;
@@ -24,17 +79,6 @@ async function getSpotifyAppToken() {
   });
   if (!res.ok) throw new Error("Failed to get Spotify token");
   return res.json() as Promise<{ access_token: string; expires_in: number }>;
-}
-
-function parsePlaylistId(input: string) {
-  const uriMatch = input.match(/spotify:playlist:([a-zA-Z0-9]+)/i);
-  if (uriMatch) return uriMatch[1];
-  let url: URL;
-  try { url = new URL(input); } catch { throw new Error("Invalid URL"); }
-  const parts = url.pathname.split("/");
-  const idx = parts.findIndex((p) => p === "playlist");
-  if (idx >= 0 && parts[idx + 1]) return parts[idx + 1];
-  throw new Error("Could not parse playlist ID");
 }
 
 async function fetchAllTracks(playlistId: string, token: string) {
@@ -57,12 +101,12 @@ async function fetchAllTracks(playlistId: string, token: string) {
   return items;
 }
 
-// ---------- Helpers: cleaning + similarity ----------
+// ---------- Helpers: cleaning + similarity for Bandcamp ----------
 function cleanTrackTitleForSearch(raw: string) {
   let t = raw;
-  t = t.replace(/[\(\[][^)\]]*[\)\]]/g, " "); // drop (...) and [...]
-  t = t.replace(/\s-\s.*$/i, " ");            // drop " - something"
-  t = t.replace(/\b(20\d{2}|19\d{2})\b/g, " "); // drop years
+  t = t.replace(/[\(\[][^)\]]*[\)\]]/g, " ");
+  t = t.replace(/\s-\s.*$/i, " ");
+  t = t.replace(/\b(20\d{2}|19\d{2})\b/g, " ");
   t = t.replace(/\b(remaster(ed)?|remix|live|mono|stereo|edit|version|deluxe|spatial|atmos)\b.*$/i, " ");
   t = t.replace(/\s+/g, " ").trim();
   return t;
@@ -89,7 +133,7 @@ function similarityScore(title: string, artist: string, url: string) {
   return score;
 }
 
-// ---------- Bandcamp (direct if confident) + always provide a broadened search ----------
+// ---------- Bandcamp (direct if confident) + always provide broadened search ----------
 async function searchBandcamp(titleRaw: string, artist: string) {
   const title = cleanTrackTitleForSearch(titleRaw);
   const query = `${artist} ${title}`.trim();
@@ -169,7 +213,12 @@ export async function POST(req: NextRequest) {
     const { playlistUrl, country } = await req.json();
     if (!playlistUrl) return NextResponse.json({ error: "playlistUrl required" }, { status: 400 });
 
-    const playlistId = parsePlaylistId(playlistUrl);
+    // NEW: expand short URLs first
+    const expanded = await expandSpotifyUrl(playlistUrl);
+
+    // Parse ID from either spotify: URI or any resolved open.spotify.com URL
+    const playlistId = parsePlaylistId(expanded);
+
     const { access_token } = await getSpotifyAppToken();
     const tracks = await fetchAllTracks(playlistId, access_token);
     const storeCountry = (country || "US").toUpperCase();
