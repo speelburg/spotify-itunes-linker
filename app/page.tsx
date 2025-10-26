@@ -1,65 +1,273 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useMemo, useState } from "react";
+
+type Row = {
+  title: string;
+  artist: string;
+  links?: {
+    appleStoreCandidates: string[];
+    appleWeb?: string | null;
+    bandcamp?: string | null;
+    bandcampSearch: string;
+  } | null;
+};
+
+const COUNTRIES = [
+  { code: "US", label: "United States" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "CA", label: "Canada" },
+  { code: "AU", label: "Australia" },
+  { code: "DE", label: "Germany" },
+  { code: "FR", label: "France" },
+  { code: "ES", label: "Spain" },
+  { code: "IT", label: "Italy" },
+  { code: "NL", label: "Netherlands" },
+  { code: "SE", label: "Sweden" },
+  { code: "JP", label: "Japan" },
+  { code: "BR", label: "Brazil" },
+];
+
+export default function Page() {
+  const [url, setUrl] = useState("");
+  const [country, setCountry] = useState("GB");
+  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<Row[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const countryName = useMemo(
+    () => COUNTRIES.find((c) => c.code === country)?.label ?? country,
+    [country]
+  );
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError(null);
+    setRows([]);
+    try {
+      const res = await fetch("/api/playlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playlistUrl: url, country }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      setRows(data.results);
+    } catch (e: any) {
+      setError(e.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function openApple(candidates: string[] = [], web?: string | null) {
+    const tryNext = (i: number) => {
+      if (i >= candidates.length) {
+        if (web) window.open(web, "_blank", "noopener,noreferrer");
+        return;
+      }
+      const href = candidates[i];
+      const timer = setTimeout(() => tryNext(i + 1), 800);
+      window.location.assign(href);
+      void timer;
+    };
+    tryNext(0);
+  }
+
+  function downloadCSV() {
+    const header = [
+      "Title",
+      "Artist",
+      "Country",
+      "iTunesStore(1st)",
+      "AppleWeb",
+      "BandcampDirect",
+      "BandcampSearch",
+    ].join(",");
+    const safe = (s: string) => (s ?? "").toString().replace(/[\r\n,]+/g, " ");
+    const lines = rows.map((r) => {
+      const firstStore = r.links?.appleStoreCandidates?.[0] ?? "";
+      const aWeb = r.links?.appleWeb ?? "";
+      const bc = r.links?.bandcamp ?? "";
+      const bcSearch = r.links?.bandcampSearch ?? "";
+      return [safe(r.title), safe(r.artist), country, firstStore, aWeb, bc, bcSearch].join(",");
+    });
+    const blob = new Blob([header + "\n" + lines.join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const dl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = dl;
+    a.download = "playlist_links.csv";
+    a.click();
+    URL.revokeObjectURL(dl);
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="min-h-screen pt-20 md:pt-28">
+      <div className="mx-auto max-w-3xl px-4 py-8 md:py-12 space-y-6">
+        {/* Header */}
+        <header className="space-y-4">
+          <div className="h1-words">
+            <span>BUY</span>
+            <span>YOUR</span>
+            <span>PLAYLIST</span>
+          </div>
+
+          <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
+            <p>paste a public spotify playlist URL</p>
+          
+          </div>
+        </header>
+
+        {/* Controls panel (peach box with green border and angled shadow) */}
+        <section className="rounded-2xl p-4 md:p-5 panel-surface psd-shadow">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <input
+              className="flex-1 rounded-xl px-3 py-2 h-11"
+              style={{
+                background: "var(--panel)",
+                border: "1px solid var(--border)",
+              }}
+              placeholder="https://open.spotify.com/playlist/..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="flex gap-2">
+              <select
+                className="rounded-xl px-3 py-2 h-11"
+                style={{
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                }}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                title="Select your iTunes Store region"
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code} — {c.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleGenerate}
+                disabled={loading || !url}
+                className="rounded-xl px-4 py-2 h-11 disabled:opacity-50 btn-solid"
+              >
+                {loading ? "Working..." : "Generate"}
+              </button>
+            </div>
+          </div>
+          <div className="mt-2 text-xs opacity-80">
+            Current store: <span className="font-medium">{countryName}</span>
+          </div>
+        </section>
+
+        {/* Error */}
+        {error && (
+          <div
+            className="rounded-xl p-3 text-sm"
+            style={{
+              border: "1px solid var(--border)",
+              background: "color-mix(in oklab, var(--panel), #ff0000 10%)",
+              color: "var(--foreground)",
+            }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {error}
+          </div>
+        )}
+
+        {/* Results list (kept from your existing code) */}
+        {!!rows.length && (
+          <section className="rounded-2xl overflow-hidden panel-surface psd-shadow">
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ borderBottom: "1px solid var(--border)" }}
+            >
+              <div className="text-sm opacity-80">
+                {rows.length} result{rows.length === 1 ? "" : "s"}
+              </div>
+              <button onClick={downloadCSV} className="rounded-lg px-3 py-2 text-sm btn-outline">
+                Download CSV
+              </button>
+            </div>
+
+            <ul>
+              {rows.map((r, i) => (
+                <li
+                  key={i}
+                  className="px-4 py-4"
+                  style={{
+                    borderTop: i === 0 ? "none" : "1px solid var(--border)",
+                  }}
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div
+                        className="text-base md:text-lg font-semibold truncate"
+                        title={r.title}
+                      >
+                        {r.title}
+                      </div>
+                      <div className="text-sm opacity-90 truncate" title={r.artist}>
+                        {r.artist}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mt-1 sm:mt-0 sm:justify-end">
+                      {r.links?.appleStoreCandidates?.length ? (
+                        <button
+                          className="rounded-lg px-3 py-2 text-sm btn-outline"
+                          onClick={() =>
+                            openApple(r.links?.appleStoreCandidates, r.links?.appleWeb)
+                          }
+                          title="Open iTunes Store in the Music/iTunes app"
+                        >
+                          iTunes Store (buy)
+                        </button>
+                      ) : (
+                        r.links?.appleWeb && (
+                          <a
+                            className="rounded-lg px-3 py-2 text-sm btn-outline"
+                            href={r.links.appleWeb}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Apple (web)
+                          </a>
+                        )
+                      )}
+
+                      {r.links?.bandcamp ? (
+                        <a
+                          className="rounded-lg px-3 py-2 text-sm btn-outline"
+                          href={r.links.bandcamp}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Bandcamp (direct)
+                        </a>
+                      ) : (
+                        r.links?.bandcampSearch && (
+                          <a
+                            className="rounded-lg px-3 py-2 text-sm btn-outline"
+                            href={r.links.bandcampSearch}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Bandcamp (search)
+                          </a>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }

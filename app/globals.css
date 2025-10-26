@@ -1,26 +1,148 @@
 @import "tailwindcss";
 
+/* ======= COLOR + TYPOGRAPHY TOKENS ======= */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #e49bb4;      /* pink page background */
+  --foreground: #0e730e;      /* green font */
+
+  --panel: #f7d7d0;           /* inside of the box */
+  --border: #0e730e;          /* green border */
+
+  --accent: #0e730e;          /* buttons, links */
+  --shadow-blue: #2e9dd6;     /* blue drop shadow */
+  --shadow-orange: #ff892b;   /* orange drop shadow */
+
+  --muted: color-mix(in oklab, var(--foreground), #ffffff 55%);
 }
 
+/* Tailwind v4 inline theme bridge */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(
+    --font-ui,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Arial,
+    "Noto Sans",
+    "Liberation Sans",
+    sans-serif
+  );
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode (optional) */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --panel: #151515;
+    --border: #2a2a2a;
+    --accent: #ededed;
+    --shadow-blue: #1c6f94;
+    --shadow-orange: #b85f20;
+    --muted: #a3a3a3;
   }
+}
+
+/* ======= FONT: Archopada Rounded ======= 
+   Place files in /public/fonts/
+   Rename to: ArchopadaRounded-ExtraBold.woff2 / .ttf
+*/
+@font-face {
+  font-family: "Archopada Rounded";
+  src:
+    local("Archopada Rounded"),
+    url("/fonts/ArchopadaRounded-ExtraBold.woff2") format("woff2"),
+    url("/fonts/ArchopadaRounded-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Use your font site-wide */
+:root {
+  --font-ui: "Archopada Rounded", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ======= Base ======= */
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
+  font-weight: 800;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--border), #ffffff 20%);
+  outline-offset: 3px;
+}
+
+/* Angled two-band PSD shadow */
+.psd-shadow {
+  box-shadow:
+    6px 6px 0 0 var(--shadow-orange),
+    12px 12px 0 0 var(--shadow-blue);
+}
+
+.panel-surface {
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.btn-outline {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--foreground);
+  font-weight: 800;
+}
+
+.btn-solid {
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid var(--border);
+  font-weight: 800;
+}
+
+/* Title: three words spaced left/center/right */
+.h1-words {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+.h1-words > span {
+  font-size: clamp(2.25rem, 4vw + 1rem, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+}
+@media (max-width: 767px) {
+  .h1-words {
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
+}
+
+/* Fully justify header paragraphs on ALL screens (including last line) */
+.header-just p {
+  text-align: justify;
+  text-align-last: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+.header-just p::after {
+  content: "";
+  display: inline-block;
+  width: 100%;
+  height: 0; /* invisible shim that forces last line to stretch */
 }
