@@ -122,7 +122,7 @@ export default function Page() {
   </a>
 
   <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
-    <p>paste your spotify playlist URL</p>
+    <p>paste your spotify playlist URL below</p>
 
     {/* byline: centered, same size as line above, 'SPEELBURG' in blue and linked */}
     <p className="no-justify text-sm md:text-base">
