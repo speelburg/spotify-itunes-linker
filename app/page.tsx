@@ -126,7 +126,7 @@ export default function Page() {
 
     {/* byline: centered, same size as line above, 'SPEELBURG' in blue and linked */}
     <p className="no-justify text-sm md:text-base">
-      by{" "}
+      by {" "}
       <a
         href="http://instagram.com/speelburg"
         target="_blank"
