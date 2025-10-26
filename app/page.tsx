@@ -149,7 +149,7 @@ export default function Page() {
     <input
       className="flex-1 rounded-xl px-4 py-3 text-base w-full"
       style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
-      placeholder="paste spotify playlist link (open.spotify.com or spotify.link)…"
+      placeholder="paste spotify playlist link here"
       value={url}
       onChange={(e) => setUrl(e.target.value)}
     />
