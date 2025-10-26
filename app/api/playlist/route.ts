@@ -5,17 +5,17 @@ const SPOTIFY_PLAYLIST_API = (id: string) =>
   `https://api.spotify.com/v1/playlists/${id}/tracks?limit=100`;
 const ITUNES_SEARCH = "https://itunes.apple.com/search";
 
-// ---------- Utilities to normalize Spotify links ----------
+// ---------- Short-link expansion ----------
 const SHORT_HOSTS = new Set([
-  "spotify.link",      // official mobile shortener
-  "spoti.fi",          // older shortener
+  "spotify.link",
+  "www.spotify.link",
+  "spoti.fi",
   "link.tospotify.com",
   "spotify.app.link",
 ]);
 
-/** Try to resolve short/mobile share URLs to a final open.spotify.com URL */
 async function expandSpotifyUrl(input: string): Promise<string> {
-  // spotify:playlist:ID — already normalized
+  // passthrough for spotify: URIs
   if (/^spotify:playlist:[a-z0-9]+$/i.test(input)) return input;
 
   let u: URL;
@@ -25,37 +25,64 @@ async function expandSpotifyUrl(input: string): Promise<string> {
     return input;
   }
 
-  // Not a short host? Nothing to expand
-  if (!SHORT_HOSTS.has(u.hostname.toLowerCase())) return input;
+  const host = u.hostname.toLowerCase();
+  if (!SHORT_HOSTS.has(host) && !SHORT_HOSTS.has(host.replace(/^www\./, ""))) return input;
 
   try {
-    // Use GET so some shorteners actually follow; Next server fetch follows redirects.
-    const res = await fetch(u.toString(), { redirect: "follow", cache: "no-store" });
-    // If redirects were followed, res.url will be the final landing URL
-    if (res?.url) return res.url;
+    // 1) Try HEAD to get Location without downloading HTML
+    let res = await fetch(u.toString(), {
+      method: "HEAD",
+      redirect: "manual",
+      cache: "no-store",
+    });
+    let loc = res.headers.get("location");
+    if (loc) return loc;
 
-    // Fallback: try reading HTML and scraping an open.spotify.com URL
-    const html = await res.text().catch(() => "");
-    const m = html.match(/https?:\/\/open\.spotify\.com\/[^\s"'<>]+/i);
-    return m ? m[0] : input;
+    // 2) Try GET with manual redirect and a desktop UA
+    res = await fetch(u.toString(), {
+      method: "GET",
+      redirect: "manual",
+      cache: "no-store",
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        Accept: "text/html,application/xhtml+xml",
+      },
+    });
+    loc = res.headers.get("location");
+    if (loc) return loc;
+
+    // 3) Read HTML and look for meta refresh / JS / direct open.spotify.com link
+    const html = await res.text();
+    const meta = html.match(/content=["']\s*\d+\s*;\s*url=([^"']+)/i);
+    if (meta?.[1]) return meta[1];
+
+    const js = html.match(/window\.location\.href\s*=\s*["']([^"']+)["']/i);
+    if (js?.[1]) return js[1];
+
+    const direct = html.match(/https?:\/\/open\.spotify\.com\/[^\s"'<>]+/i);
+    if (direct?.[0]) return direct[0];
+
+    return input;
   } catch {
-    return input; // If anything fails, return original; parser may still handle it
+    return input;
   }
 }
 
-/** Extract playlist ID from diverse Spotify URL shapes or a spotify: URI */
 function parsePlaylistId(input: string) {
-  // spotify:playlist:ID
   const uriMatch = input.match(/^spotify:playlist:([a-zA-Z0-9]+)/i);
   if (uriMatch) return uriMatch[1];
 
-  // Any URL form → look for /playlist/{id} anywhere in the path
   let url: URL;
-  try { url = new URL(input); } catch { throw new Error("Invalid URL"); }
+  try {
+    url = new URL(input);
+  } catch {
+    throw new Error("Invalid URL");
+  }
 
-  const path = url.pathname; // e.g. /playlist/37i9dQZF1DXcBWIGoYBM5M or /user/xxx/playlist/ID
-  const direct = path.match(/\/playlist\/([a-zA-Z0-9]+)/i);
-  if (direct?.[1]) return direct[1];
+  // handle /playlist/{id} anywhere (works for /user/.../playlist/{id} too)
+  const m = url.pathname.match(/\/playlist\/([a-zA-Z0-9]+)/i);
+  if (m?.[1]) return m[1];
 
   throw new Error("Could not parse playlist ID");
 }
@@ -86,7 +113,10 @@ async function fetchAllTracks(playlistId: string, token: string) {
   const items: { title: string; artist: string }[] = [];
 
   while (url) {
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
     if (!res.ok) throw new Error("Failed to fetch Spotify tracks");
     const data = await res.json();
     for (const it of data.items ?? []) {
@@ -101,7 +131,7 @@ async function fetchAllTracks(playlistId: string, token: string) {
   return items;
 }
 
-// ---------- Helpers: cleaning + similarity for Bandcamp ----------
+// ---------- Bandcamp helpers ----------
 function cleanTrackTitleForSearch(raw: string) {
   let t = raw;
   t = t.replace(/[\(\[][^)\]]*[\)\]]/g, " ");
@@ -112,7 +142,12 @@ function cleanTrackTitleForSearch(raw: string) {
   return t;
 }
 function normalizeTokens(s: string) {
-  return s.toLowerCase().replace(/[\u2018\u2019']/g, "").replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter(Boolean);
+  return s
+    .toLowerCase()
+    .replace(/[\u2018\u2019']/g, "")
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
 }
 function similarityScore(title: string, artist: string, url: string) {
   const u = url.toLowerCase();
@@ -132,8 +167,6 @@ function similarityScore(title: string, artist: string, url: string) {
 
   return score;
 }
-
-// ---------- Bandcamp (direct if confident) + always provide broadened search ----------
 async function searchBandcamp(titleRaw: string, artist: string) {
   const title = cleanTrackTitleForSearch(titleRaw);
   const query = `${artist} ${title}`.trim();
@@ -155,7 +188,10 @@ async function searchBandcamp(titleRaw: string, artist: string) {
     let bestScore = -999;
     for (const m of matches) {
       const s = similarityScore(title, artist, m);
-      if (s > bestScore) { best = m; bestScore = s; }
+      if (s > bestScore) {
+        best = m;
+        bestScore = s;
+      }
     }
     if (bestScore >= 6) return { direct: best, search: searchUrl };
     return { direct: null, search: searchUrl };
@@ -168,7 +204,9 @@ async function searchBandcamp(titleRaw: string, artist: string) {
 function buildITunesStoreCandidates(trackId?: number, collectionId?: number) {
   const c: string[] = [];
   if (trackId && collectionId) {
-    c.push(`itms://itunes.apple.com/WebObjects/MZStore.woa/wa/viewAlbum?i=${trackId}&id=${collectionId}&uo=4&app=itunes`);
+    c.push(
+      `itms://itunes.apple.com/WebObjects/MZStore.woa/wa/viewAlbum?i=${trackId}&id=${collectionId}&uo=4&app=itunes`
+    );
     c.push(`itms://itunes.apple.com/album/id${collectionId}?i=${trackId}&uo=4&app=itunes`);
     c.push(`itms://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSong?i=${trackId}&uo=4&app=itunes`);
   } else if (collectionId) {
@@ -176,7 +214,6 @@ function buildITunesStoreCandidates(trackId?: number, collectionId?: number) {
   }
   return c;
 }
-
 async function searchITunesLinks(title: string, artist: string, country: string) {
   const cleanTitle = cleanTrackTitleForSearch(title);
   const term = `${cleanTitle} ${artist}`;
@@ -195,7 +232,10 @@ async function searchITunesLinks(title: string, artist: string, country: string)
   for (const r of data.results ?? []) {
     const a = (r.artistName || "").toLowerCase();
     const t = (r.trackName || "").toLowerCase();
-    if (a.includes(artist.toLowerCase()) && t.includes(cleanTitle.toLowerCase())) { best = r; break; }
+    if (a.includes(artist.toLowerCase()) && t.includes(cleanTitle.toLowerCase())) {
+      best = r;
+      break;
+    }
     if (!best) best = r;
   }
   if (!best) return { storeCandidates: [], web: null };
@@ -211,12 +251,11 @@ async function searchITunesLinks(title: string, artist: string, country: string)
 export async function POST(req: NextRequest) {
   try {
     const { playlistUrl, country } = await req.json();
-    if (!playlistUrl) return NextResponse.json({ error: "playlistUrl required" }, { status: 400 });
+    if (!playlistUrl)
+      return NextResponse.json({ error: "playlistUrl required" }, { status: 400 });
 
-    // NEW: expand short URLs first
+    // Expand short link first
     const expanded = await expandSpotifyUrl(playlistUrl);
-
-    // Parse ID from either spotify: URI or any resolved open.spotify.com URL
     const playlistId = parsePlaylistId(expanded);
 
     const { access_token } = await getSpotifyAppToken();
@@ -226,15 +265,15 @@ export async function POST(req: NextRequest) {
     const results = await Promise.all(
       tracks.map(async (t) => {
         const apple = await searchITunesLinks(t.title, t.artist, storeCountry);
-        const bc    = await searchBandcamp(t.title, t.artist);
+        const bc = await searchBandcamp(t.title, t.artist);
 
         return {
           title: t.title,
           artist: t.artist,
           links: {
             appleStoreCandidates: apple.storeCandidates,
-            appleWeb:   apple.web || null,
-            bandcamp:   bc.direct || null,
+            appleWeb: apple.web || null,
+            bandcamp: bc.direct || null,
             bandcampSearch: bc.search,
           },
         };
