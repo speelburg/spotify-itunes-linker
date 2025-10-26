@@ -126,17 +126,18 @@ export default function Page() {
 
     {/* byline: centered, same size as line above, 'SPEELBURG' in blue and linked */}
     <p className="no-justify text-sm md:text-base">
-      by {" "}
-      <a
-        href="http://instagram.com/speelburg"
-        target="_blank"
-        rel="noreferrer"
-        className="link-blue"
-        title="SPEELBURG on Instagram"
-      >
-        SPEELBURG
-      </a>
-    </p>
+  by&nbsp;
+  <a
+    href="http://instagram.com/speelburg"
+    target="_blank"
+    rel="noreferrer"
+    className="link-blue"
+    title="SPEELBURG on Instagram"
+  >
+    SPEELBURG
+  </a>
+</p>
+
   </div>
 </header>
 
