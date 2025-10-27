@@ -122,23 +122,15 @@ export default function Page() {
             <span>E</span>
             <span>L</span>
             <span>I</span>
-            <span>S</span>
-            <span>T</span>
           </a>
 
           <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
-<p className="mb-0">
-  a quick way for DJs, collectors, and fans to buy their favorite tracks
-</p>
-<p className="text-xs md:text-xs mt-3 md:-mt-2">
-  drop your spotify playlist link below ↓ to get direct itunes and &amp; bandcamp links
-</p>
+            <p className="mb-0">
+              a quick way for DJs, collectors, and fans to buy their favorite tracks
+            </p>
 
-
-
-
-            {/* byline: centered, same size, 'speelburg' in blue */}
-            <p className="no-justify text-sm md:text-base">
+            {/* byline: tighter gap above, big gap below preserved */}
+            <p className="no-justify text-sm md:text-base -mt-4 mb-8 md:mb-12">
               by&nbsp;&nbsp;
               <a
                 href="http://instagram.com/speelburg"
@@ -150,11 +142,21 @@ export default function Page() {
                 speelburg
               </a>
             </p>
+
+            <p
+              className="text-xs md:text-xs mt-2 mb-0"
+              style={{
+                fontFamily: '"Archopada Rounded Regular", var(--font-ui)',
+                fontWeight: 400,
+              }}
+            >
+              drop your spotify playlist link below ↓ to get itunes and &amp; bandcamp links
+            </p>
           </div>
         </header>
 
         {/* Controls panel */}
-        <section className="rounded-2xl p-4 md:p-5 panel-surface psd-shadow">
+        <section className="rounded-2xl p-4 md:p-5 panel-surface psd-shadow -mt-4 md:-mt-6">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch">
             {/* URL input */}
             <input
@@ -204,7 +206,8 @@ export default function Page() {
             rel="noreferrer"
             title="Listen to Silver Medal Slump by SPEELBURG"
           >
-            i made an album called &nbsp;&nbsp;<span className="blue">silver &nbsp; medal &nbsp; slump</span>
+            i made an album called &nbsp;&nbsp;
+            <span className="blue">silver &nbsp; medal &nbsp; slump</span>
           </a>
         </div>
 
@@ -267,7 +270,7 @@ export default function Page() {
                         r.links?.appleWeb && (
                           <a
                             className="rounded-lg px-3 py-2 text-sm btn-outline"
-                            href={r.links.appleWeb}
+                            href={r.links?.appleWeb}
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -279,7 +282,7 @@ export default function Page() {
                       {r.links?.bandcamp ? (
                         <a
                           className="rounded-lg px-3 py-2 text-sm btn-outline"
-                          href={r.links.bandcamp}
+                          href={r.links?.bandcamp}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -289,7 +292,7 @@ export default function Page() {
                         r.links?.bandcampSearch && (
                           <a
                             className="rounded-lg px-3 py-2 text-sm btn-outline"
-                            href={r.links.bandcampSearch}
+                            href={r.links?.bandcampSearch}
                             target="_blank"
                             rel="noreferrer"
                           >
