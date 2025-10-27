@@ -191,8 +191,8 @@ export default function Page() {
     target="_blank"
     rel="noreferrer"
   >
-    silver medal slump &nbsp; — &nbsp; an album by &nbsp;{" "}
-    <span className="blue">speelburg</span>
+    listen to &nbsp;{" "}
+    <span className="blue">silver medal slump</span>
   </a>
 
   <a
