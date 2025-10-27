@@ -190,44 +190,28 @@ body {
 .bottom-links .blue {
   color: var(--shadow-blue);
 }
-/* --- footer bar under main box --- */
-.bottom-bar {
+/* --- single centered footer link --- */
+.bottom-bar.single {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;        /* 👈 centers the text */
   align-items: center;
-  margin-top: 1rem;          /* extra space above */
+  margin-top: 2rem;            /* space above */
   padding: 0.5rem 0;
-  border-top: 0px solid var(--border); /* optional subtle top border */
-  font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+  font-size: clamp(0.7rem, 1.6vw, 0.8rem); /* slightly smaller text */
   line-height: 1.4;
 }
 
-.bottom-bar a {
+.bottom-bar.single a {
   color: inherit;
   text-decoration: none;
-  flex: 1;
 }
 
-.bottom-bar a:hover {
-  text-decoration: none;         /* no underline on hover */
+.bottom-bar.single a:hover {
+  text-decoration: none;          /* no underline on hover */
 }
 
-.bottom-bar .blue {
+.bottom-bar.single .blue {
   color: var(--shadow-blue);
 }
 
-.bottom-bar .left-link {
-  text-align: left;
-}
-
-.bottom-bar .right-link {
-  text-align: right;
-}
-
-.bottom-bar .divider {
-  width: 0px;
-  background: var(--border);
-  height: 1.25rem;
-  margin: 0 1rem;
-}
 

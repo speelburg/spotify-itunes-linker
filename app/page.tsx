@@ -184,30 +184,18 @@ export default function Page() {
     current store: <span className="font-medium">{countryName}</span>
   </div>
 </section>
-{/* bottom links bar */}
-<div className="bottom-bar">
+{/* bottom single link under main box */}
+<div className="bottom-bar single">
   <a
     href="https://open.spotify.com/album/3hEiBBpfYIVEUuyftPyqu0?si=ptgMN3ElT8SxZq97nf1URw"
     target="_blank"
     rel="noreferrer"
-    className="left-link"
     title="Listen to Silver Medal Slump by SPEELBURG"
   >
-    &nbsp;listen &nbsp;to&nbsp;&nbsp;&nbsp;<span className="blue">silver &nbsp;medal &nbsp;slump</span>
-  </a>
-
-  <span className="divider" />
-
-  <a
-    href="https://www.youtube.com/speelburg"
-    target="_blank"
-    rel="noreferrer"
-    className="right-link"
-    title="Watch on YouTube"
-  >
-    watch &nbsp;on&nbsp;&nbsp;&nbsp;<span className="blue">youtube</span>
+    i made an album called &nbsp;&nbsp;<span className="blue">silver &nbsp; medal &nbsp; slump</span>
   </a>
 </div>
+
 
 
 
