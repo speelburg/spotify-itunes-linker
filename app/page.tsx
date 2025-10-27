@@ -121,6 +121,8 @@ export default function Page() {
             <span>E</span>
             <span>E</span>
             <span>B</span>
+            <span>E</span>
+            <span>E</span>
 
           </a>
 
