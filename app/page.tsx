@@ -130,9 +130,10 @@ export default function Page() {
 <p className="mb-0">
   a quick way for DJs, collectors, and fans to buy their favorite tracks
 </p>
-<p className="text-xs -mt-2">
+<p className="text-xs md:text-xs mt-3 md:-mt-2">
   drop your spotify playlist link below ↓ to get direct itunes and &amp; bandcamp links
 </p>
+
 
 
 
