@@ -186,7 +186,7 @@ export default function Page() {
         {/* Single centered footer link */}
         <div className="bottom-bar single">
           <a
-            href="https://open.spotify.com/album/3hEiBBpfYIVEUuyftPyqu0?si=ptgMN3ElT8SxZq97nf1URw"
+            href="https://open.spotify.com/artist/0bn8cJWYNORYFzNUxTb8n1?si=Q_vEu-VtSbiDUfQsFYAxfA"
             target="_blank"
             rel="noreferrer"
             title="Listen to Silver Medal Slump by SPEELBURG"
