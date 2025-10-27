@@ -120,8 +120,8 @@ export default function Page() {
             <span>P</span>
             <span>E</span>
             <span>E</span>
-            <span>L</span>
-            <span>I</span>
+            <span>B</span>
+
           </a>
 
           <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
@@ -130,7 +130,7 @@ export default function Page() {
             </p>
 
             {/* byline: tighter gap above, big gap below preserved */}
-            <p className="no-justify text-sm md:text-base -mt-4 mb-8 md:mb-12">
+            <p className="no-justify text-sm md:text-base -mt-2 mb-8 md:mb-12">
               by&nbsp;&nbsp;
               <a
                 href="http://instagram.com/speelburg"
@@ -143,16 +143,7 @@ export default function Page() {
               </a>
             </p>
 
-            <p
-  className="text-xs md:text-xs mt-2 mb-0"
-  style={{
-    fontFamily: '"Archopada Rounded Regular", var(--font-ui)',
-    fontWeight: 400,            // always use regular weight
-    fontVariationSettings: '"wght" 400', // ensures regular on variable-weight browsers
-  }}
->
-  drop your spotify playlist link below ↓ to get itunes and &amp; bandcamp links
-</p>
+
 
           </div>
         </header>
