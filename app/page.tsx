@@ -116,13 +116,25 @@ export default function Page() {
             className="h1-words unstyled-link"
             title="Follow SPEELBURG on Instagram"
           >
-            <span>OWN</span>
-            <span>YOUR</span>
-            <span>PLAYLIST</span>
+            <span>S</span>
+            <span>P</span>
+            <span>E</span>
+            <span>E</span>
+            <span>L</span>
+            <span>I</span>
+            <span>S</span>
+            <span>T</span>
           </a>
 
           <div className="header-just space-y-2 text-sm md:text-base opacity-90 leading-relaxed">
-            <p>a quick way for DJs, collectors, and fans to buy their favorite tracks</p>
+<p className="mb-0">
+  a quick way for DJs, collectors, and fans to buy their favorite tracks
+</p>
+<p className="text-xs -mt-2">
+  drop your spotify playlist link below ↓ to get direct itunes and &amp; bandcamp links
+</p>
+
+
 
             {/* byline: centered, same size, 'speelburg' in blue */}
             <p className="no-justify text-sm md:text-base">
