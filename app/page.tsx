@@ -184,25 +184,31 @@ export default function Page() {
     current store: <span className="font-medium">{countryName}</span>
   </div>
 </section>
-{/* bottom links under main box */}
-<div className="bottom-links">
+{/* bottom links bar */}
+<div className="bottom-bar">
   <a
     href="https://open.spotify.com/album/3hEiBBpfYIVEUuyftPyqu0?si=ptgMN3ElT8SxZq97nf1URw"
     target="_blank"
     rel="noreferrer"
+    className="left-link"
+    title="Listen to Silver Medal Slump by SPEELBURG"
   >
-    listen to &nbsp;{" "}
-    <span className="blue">silver medal slump</span>
+    &nbsp;listen &nbsp;to&nbsp;&nbsp;&nbsp;<span className="blue">silver &nbsp;medal &nbsp;slump</span>
   </a>
+
+  <span className="divider" />
 
   <a
     href="https://www.youtube.com/speelburg"
     target="_blank"
     rel="noreferrer"
+    className="right-link"
+    title="Watch on YouTube"
   >
-    watch on &nbsp; <span className="blue">youtube</span>
+    watch &nbsp;on&nbsp;&nbsp;&nbsp;<span className="blue">youtube</span>
   </a>
 </div>
+
 
 
 
