@@ -61,6 +61,17 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "Archopada Rounded Regular";
+  src:
+    local("Archopada Rounded Regular"),
+    url("/fonts/ArchopadaRounded-Regular.woff") format("woff"),
+    url("/fonts/ArchopadaRounded-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 /* Use your font site-wide */
 :root {

@@ -144,14 +144,16 @@ export default function Page() {
             </p>
 
             <p
-              className="text-xs md:text-xs mt-2 mb-0"
-              style={{
-                fontFamily: '"Archopada Rounded Regular", var(--font-ui)',
-                fontWeight: 400,
-              }}
-            >
-              drop your spotify playlist link below ↓ to get itunes and &amp; bandcamp links
-            </p>
+  className="text-xs md:text-xs mt-2 mb-0"
+  style={{
+    fontFamily: '"Archopada Rounded Regular", var(--font-ui)',
+    fontWeight: 400,            // always use regular weight
+    fontVariationSettings: '"wght" 400', // ensures regular on variable-weight browsers
+  }}
+>
+  drop your spotify playlist link below ↓ to get itunes and &amp; bandcamp links
+</p>
+
           </div>
         </header>
 
